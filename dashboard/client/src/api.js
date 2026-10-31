@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // The API runs on a different port (3000) than the Vite dev server (5173).
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 // withCredentials: send the login cookie so returning users stay connected.
 const client = axios.create({ baseURL: `${API_BASE}/api`, withCredentials: true });
