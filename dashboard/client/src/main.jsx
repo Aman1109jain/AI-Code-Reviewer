@@ -5,6 +5,7 @@ import { ThemeProvider } from './context/ThemeContext.jsx';
 import { GithubProvider } from './context/GithubContext.jsx';
 import { LiveProvider } from './context/LiveContext.jsx';
 import './index.css';
+import './responsive.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

@@ -1,0 +1,170 @@
+html,
+body {
+  max-width: 100%;
+}
+
+.app-shell {
+  min-height: 100dvh;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: min(260px, 85vw);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar.is-collapsed {
+    width: 0;
+  }
+
+  .panel > table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .panel > table th,
+  .panel > table td {
+    white-space: nowrap;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .detail-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .detail-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .detail-tab {
+    flex-shrink: 0;
+  }
+
+  .detail-actions {
+    flex-wrap: wrap;
+  }
+
+  .finding-card,
+  .detail-header h2,
+  .file-path {
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .topbar {
+    padding: 0 12px;
+  }
+
+  .topbar-left,
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .live-indicator {
+    padding: 6px;
+  }
+
+  .live-indicator span {
+    display: none;
+  }
+  .github-dropdown {
+    min-width: 180px;
+    max-width: calc(100vw - 24px);
+  }
+
+  .icon-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .table-toolbar {
+    width: 100%;
+  }
+
+  .search-box {
+    flex: 1 1 100%;
+  }
+
+  .search-box input {
+    width: 100%;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .panel-header {
+    padding: 14px;
+  }
+
+  .pr-form-grid {
+    grid-template-columns: 1fr;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .quick-review-editor {
+    padding: 12px;
+  }
+
+  .quick-review-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .filename-input {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+
+  .quick-review-footer {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .drop-actions {
+    flex-wrap: wrap;
+  }
+
+  .code-textarea {
+    min-height: 200px;
+  }
+
+  .panel-header-plain h2 {
+    font-size: 19px;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  .modal {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-main {
+    padding: 14px 10px 56px;
+  }
+
+  .stat-cards {
+    gap: 10px;
+  }
+
+  .dashboard {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 380px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
+}
