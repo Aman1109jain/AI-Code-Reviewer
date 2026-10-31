@@ -1,0 +1,6 @@
+node_modules
+.env
+test-gemini.js
+dashboard/client/dist
+dashboard/client/node_modules
+.data

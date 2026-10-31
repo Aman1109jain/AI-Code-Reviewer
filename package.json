@@ -1,0 +1,30 @@
+{
+  "name": "ai-code-reviewer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node tests/test-quick-files.js && node tests/test-upload-files.mjs && node tests/test-session.js",
+    "migrate": "node scripts/migrate.js",
+    "server": "node server.js",
+    "client": "npm run dev --prefix dashboard/client",
+    "dev": "concurrently -k -n SERVER,CLIENT -c blue,green \"npm:server\" \"npm:client\"",
+    "start": "npm run dev",
+    "install:all": "npm install && npm install --prefix dashboard/client"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@google/genai": "^2.18.0",
+    "axios": "^1.19.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.4",
+    "smee-client": "^3.1.1"
+  }
+}
