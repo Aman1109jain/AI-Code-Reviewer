@@ -8,7 +8,7 @@ const NEW_TOKEN_URL =
   'https://github.com/settings/tokens/new?scopes=repo&description=' + encodeURIComponent('AI Code Reviewer');
 
 export default function ConnectModal() {
-  const { connectOpen, closeConnect, connectWithToken, connectWithOAuth, oauthConfigured } = useGithub();
+  const { connectOpen, closeConnect, connectWithToken } = useGithub();
   const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -51,15 +51,6 @@ export default function ConnectModal() {
             <X size={16} />
           </button>
         </div>
-
-        {oauthConfigured && (
-          <>
-            <button className="btn-primary modal-wide" onClick={connectWithOAuth}>
-              <Github size={16} /> Continue with GitHub
-            </button>
-            <div className="modal-or">or use a token</div>
-          </>
-        )}
 
         <ol className="modal-steps">
           <li>

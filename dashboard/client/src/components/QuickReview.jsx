@@ -224,6 +224,13 @@ export default function QuickReview({ onOpenReview }) {
         <p>Paste code, or upload files and whole folders, and get an instant review — no GitHub PR needed.</p>
       </div>
 
+      {!connected && (
+        <div className="adm-notice adm-notice-info" role="status">
+          Connect your GitHub account to run reviews (your results are private to you).{' '}
+          <button className="adm-link" onClick={connect}>Connect GitHub</button>
+        </div>
+      )}
+
       <div className="panel quick-review-editor">
         <div className="quick-review-toolbar">
           <div className="detail-tabs input-tabs">
@@ -235,7 +242,7 @@ export default function QuickReview({ onOpenReview }) {
               {uploaded.length > 0 && <span className="tab-count">{uploaded.length}</span>}
             </button>
           </div>
-          <button className="btn-primary" onClick={runReview} disabled={running || !canRun}>
+          <button className="btn-primary" onClick={runReview} disabled={running || !canRun || !connected}>
             {running ? <Loader2 size={15} className="spin" /> : <Play size={15} />}
             {running ? `Reviewing… ${elapsed}s` : 'Run review'}
           </button>

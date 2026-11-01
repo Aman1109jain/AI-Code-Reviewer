@@ -19,7 +19,7 @@ export default function PRDetail({ reviewId, onBack }) {
         setReview(data.review);
         setFindings(data.findings);
       })
-      .catch((err) => setError(err.message))
+      .catch((err) => setError(err.response?.data?.error || err.message))
       .finally(() => setLoading(false));
   }, [reviewId]);
 

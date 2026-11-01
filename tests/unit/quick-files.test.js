@@ -1,8 +1,8 @@
 // Run with: npm test   (or: node tests/test-quick-files.js)
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const Q = require('../utils/quick-files');
-const { computeOverallScore } = require('../review-engine/merge-findings');
+const Q = require('../../utils/quick-files');
+const { computeOverallScore } = require('../../review-engine/merge-findings');
 
 test('sanitizePath cleans separators and rejects traversal', () => {
   assert.equal(Q.sanitizePath('src\\app\\main.py'), 'src/app/main.py');

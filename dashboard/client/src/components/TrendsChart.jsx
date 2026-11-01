@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import api from '../api.js';
 import { useLive } from '../context/LiveContext.jsx';
+import { useGithub } from '../context/GithubContext.jsx';
 
 const COLORS = {
   blocking: '#fb5a7e',
@@ -28,14 +29,20 @@ export default function TrendsChart() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const { version } = useLive();
+  const { connected } = useGithub();
 
   useEffect(() => {
+    if (!connected) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
     api
       .getSeverityCounts()
       .then((d) => setData(d.map((x) => ({ ...x, label: LABELS[x.severity] || x.severity }))))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [version]);
+  }, [version, connected]);
 
   return (
     <div className="panel chart-panel" id="findings-chart">

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import api from '../api.js';
 import { useLive } from '../context/LiveContext.jsx';
+import { useGithub } from '../context/GithubContext.jsx';
 
 const COLORS = {
   blocking: 'var(--blocking)',
@@ -12,10 +13,15 @@ const COLORS = {
 export default function MiniChart() {
   const [data, setData] = useState([]);
   const { version } = useLive();
+  const { connected } = useGithub();
 
   useEffect(() => {
+    if (!connected) {
+      setData([]);
+      return;
+    }
     api.getSeverityCounts().then(setData).catch(() => setData([]));
-  }, [version]);
+  }, [version, connected]);
 
   const total = data.reduce((sum, d) => sum + d.count, 0);
 

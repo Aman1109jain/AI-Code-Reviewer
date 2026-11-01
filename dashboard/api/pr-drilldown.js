@@ -1,21 +1,20 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
-const { getReviewById, getFindingsByReview } = require('../../findings/db');
+const { getReviewForUser, getFindingsByReview } = require('../../findings/db');
+const { requireGithubUser } = require('../../middleware/auth');
+const { validate, idParam } = require('../../middleware/validate');
+const { HttpError, wrap } = require('../../middleware/errors');
 
-router.get('/reviews/:id/findings', async (req, res) => {
-  try {
-    const review = await getReviewById(req.params.id);
-    if (!review) {
-      return res.status(404).json({ error: 'Review not found' });
-    }
-    const findings = await getFindingsByReview(req.params.id);
-    // The stored source copies (used only for "Create PR") can be large and the
-    // detail page doesn't need them — the diff already contains the code.
-    const { source_code, source_files, ...reviewForDisplay } = review;
-    res.json({ review: reviewForDisplay, findings });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get('/reviews/:id/findings', requireGithubUser, validate({ params: idParam }), wrap(async (req, res) => {
+  // Scoped to the signed-in user: someone else's review id answers exactly like a missing one.
+  const review = await getReviewForUser(req.params.id, req.ghUser.userId);
+  if (!review) throw new HttpError(404, 'Review not found');
+  const findings = await getFindingsByReview(review.id);
+  // The stored source copies (used only for "Create PR") can be large and the detail
+  // page doesn't need them - the diff already contains the code.
+  const { source_code, source_files, owner_user_id, ...reviewForDisplay } = review;
+  res.json({ review: reviewForDisplay, findings });
+}));
 
 module.exports = router;

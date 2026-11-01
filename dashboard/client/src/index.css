@@ -81,10 +81,8 @@ body {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-.mono,
 .mono-cell,
-.diff-viewer,
-.raw-table {
+.diff-viewer {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -627,17 +625,6 @@ td {
   font-size: 12.5px;
 }
 
-.actions-cell {
-  text-align: right;
-  width: 1%;
-  white-space: nowrap;
-}
-
-.confirm-delete {
-  display: inline-flex;
-  gap: 6px;
-}
-
 .btn-danger-sm,
 .btn-ghost-sm {
   display: inline-flex;
@@ -713,23 +700,6 @@ td {
 /* ---------------------------------------------------------------------
    Raw table (Tables page)
 --------------------------------------------------------------------- */
-.table-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 12px 18px 0;
-}
-
-.table-scroll {
-  overflow: auto;
-  max-height: 60vh;
-}
-
-.raw-table th,
-.raw-table td {
-  padding: 8px 14px;
-  font-size: 12px;
-  white-space: nowrap;
-}
 
 .cell-null {
   color: var(--muted);
@@ -1068,31 +1038,6 @@ a:focus-visible {
   padding: 0;
   color: var(--text);
   font-size: 12.5px;
-}
-
-.sidebar-repo-connect {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.sidebar-repo-connect.is-on {
-  background: var(--accent-2-soft);
-  border-color: var(--accent-2-soft);
-  color: var(--accent-2);
-}
-
-.sidebar-repo-connect:disabled {
-  opacity: 0.5;
-  cursor: wait;
 }
 
 /* ---------------------------------------------------------------------
@@ -1532,11 +1477,6 @@ a:focus-visible {
   line-height: 1.5;
 }
 
-.connect-card .connect-card-warn {
-  margin-top: 8px;
-  color: var(--blocking);
-}
-
 .connect-error {
   display: flex;
   align-items: center;
@@ -1622,13 +1562,6 @@ a:focus-visible {
 .modal-wide {
   width: 100%;
   justify-content: center;
-}
-
-.modal-or {
-  margin: 12px 0;
-  text-align: center;
-  font-size: 12px;
-  color: var(--muted);
 }
 
 .modal-note {

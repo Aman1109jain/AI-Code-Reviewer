@@ -1,14 +1,21 @@
 {
   "name": "ai-code-reviewer",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "node tests/test-quick-files.js && node tests/test-upload-files.mjs && node tests/test-session.js",
+    "test": "node --test \"tests/unit/*.test.*\" \"tests/integration/*.test.*\"",
+    "test:unit": "node --test \"tests/unit/*.test.*\"",
+    "test:integration": "node --test \"tests/integration/*.test.*\"",
     "migrate": "node scripts/migrate.js",
+    "create-admin": "node scripts/admin-cli.js create",
+    "admin": "node scripts/admin-cli.js",
     "server": "node server.js",
     "client": "npm run dev --prefix dashboard/client",
     "dev": "concurrently -k -n SERVER,CLIENT -c blue,green \"npm:server\" \"npm:client\"",
-    "start": "npm run dev",
+    "build": "npm run build --prefix dashboard/client",
+    "start": "node server.js",
+    "start:prod": "npm run build && NODE_ENV=production node server.js",
+    "audit:deps": "npm audit --omit=dev --audit-level=high && npm audit --prefix dashboard/client --omit=dev --audit-level=high",
     "install:all": "npm install && npm install --prefix dashboard/client"
   },
   "keywords": [],
@@ -21,10 +28,18 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "pg": "^8.13.1"
+    "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
+    "pg": "^8.13.1",
+    "qrcode": "^1.5.4",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "concurrently": "^9.2.4",
     "smee-client": "^3.1.1"
-  }
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true
 }

@@ -1,22 +1,25 @@
-import { useEffect, useRef, useState } from "react";
-import api from "../api.js";
+import { useEffect, useState } from 'react';
 
-export function useLiveEvents() {
+// Live updates (server-sent events). Only opened for a connected GitHub user: the
+// server rejects anonymous streams, and only sends this user's own events.
+export function useLiveEvents(enabled) {
   const [version, setVersion] = useState(0);
   const [live, setLive] = useState(false);
   const [lastEvent, setLastEvent] = useState(null);
-  const sourceRef = useRef(null);
 
   useEffect(() => {
-    const source = new EventSource(`${api.API_BASE}/api/events`);
-    sourceRef.current = source;
+    if (!enabled) {
+      setLive(false);
+      return undefined;
+    }
+    const source = new EventSource('/api/events');
 
     source.onopen = () => setLive(true);
     source.onerror = () => setLive(false);
     source.onmessage = (evt) => {
       try {
         const payload = JSON.parse(evt.data);
-        if (payload.type === "connected") {
+        if (payload.type === 'connected') {
           setLive(true);
           return;
         }
@@ -28,7 +31,7 @@ export function useLiveEvents() {
     };
 
     return () => source.close();
-  }, []);
+  }, [enabled]);
 
   return { version, live, lastEvent };
 }

@@ -1,6 +1,25 @@
-node_modules
+# dependencies & build output
+node_modules/
+dashboard/client/dist/
+
+# secrets and local state - never commit these
 .env
-test-gemini.js
-dashboard/client/dist
-dashboard/client/node_modules
-.data
+.env.*
+.data/
+*.pem
+*.key
+
+# logs, editors, OS files
+*.log
+npm-debug.log*
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+coverage/
+
+# local tooling
+.neon
+.agents/
+skills-lock.json

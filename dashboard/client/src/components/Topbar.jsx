@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Github, Sun, Moon, Menu, CircleDot, LogOut, ExternalLink } from 'lucide-react';
+import { Github, Sun, Moon, Menu, CircleDot, LogOut, ExternalLink, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { useGithub } from '../context/GithubContext.jsx';
 
-export default function Topbar({ onToggleSidebar, live, onNavigate }) {
+export default function Topbar({ onToggleSidebar, live, onNavigate, adminActive = false }) {
   const { theme, toggleTheme } = useTheme();
   const { loading, connected, login, avatarUrl, profileUrl, connect, disconnect } = useGithub();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -85,6 +85,16 @@ export default function Topbar({ onToggleSidebar, live, onNavigate }) {
             )}
           </div>
         )}
+
+        <button
+          className={`github-btn admin-btn ${adminActive ? 'is-active' : ''}`}
+          onClick={() => onNavigate('/admin')}
+          title="Administrator sign-in"
+          aria-label="Admin"
+        >
+          <ShieldCheck size={16} />
+          <span>Admin</span>
+        </button>
       </div>
     </header>
   );

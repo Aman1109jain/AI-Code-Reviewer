@@ -1,7 +1,6 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import {
   LayoutGrid,
-  Table2,
   GitBranch,
   ChevronsLeft,
   ChevronsRight,
@@ -15,7 +14,8 @@ import {
   Github,
 } from 'lucide-react';
 import { useGithub } from '../context/GithubContext.jsx';
-import MiniChart from './MiniChart.jsx';
+// The charting library is only downloaded once someone is connected and has data to chart.
+const MiniChart = lazy(() => import('./MiniChart.jsx'));
 
 export default function Sidebar({ collapsed, onToggle, route, onNavigate, activeRepo, onFilterRepo, onGoToChart }) {
   const { connected, loading, repos, reposLoading, connect } = useGithub();
@@ -24,7 +24,6 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
   const navItems = [
     { key: 'dashboard', label: 'Dashboard', icon: LayoutGrid, path: '/' },
     { key: 'review', label: 'Quick Check', icon: Code2, path: '/review' },
-    { key: 'tables', label: 'Tables', icon: Table2, path: '/tables' },
   ];
 
   return (
@@ -100,8 +99,8 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
                   </div>
                 ))}
               {connected && (
-                <div className="sidebar-empty" title="Add SMEE_URL from .env as a webhook (Pull requests events) in each repo's GitHub settings to start getting reviews on it.">
-                  Add SMEE_URL as a webhook on a repo (in GitHub settings) to review its PRs.
+                <div className="sidebar-empty" title="In the repo's GitHub settings, add a webhook for Pull requests events (content type application/json) using your webhook URL and the same secret as GITHUB_WEBHOOK_SECRET in .env.">
+                  Add a webhook on a repo (GitHub settings) to review its PRs.
                 </div>
               )}
             </div>
@@ -112,7 +111,13 @@ export default function Sidebar({ collapsed, onToggle, route, onNavigate, active
             <span>Findings by severity</span>
           </button>
           <div className="sidebar-chart">
-            <MiniChart />
+            {connected ? (
+              <Suspense fallback={<div className="sidebar-empty">Loading…</div>}>
+                <MiniChart />
+              </Suspense>
+            ) : (
+              <div className="sidebar-empty">No findings yet.</div>
+            )}
           </div>
         </>
       )}

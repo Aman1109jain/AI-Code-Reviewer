@@ -10,7 +10,7 @@ import {
   loadFiles,
   groupFindingsByFile,
   formatBytes,
-} from '../dashboard/client/src/utils/uploadFiles.js';
+} from '../../dashboard/client/src/utils/uploadFiles.js';
 
 // Minimal stand-ins for the browser's File / FileSystemEntry objects.
 const fakeFile = (content, extra = {}) => ({

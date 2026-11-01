@@ -1,70 +1,34 @@
-require('dotenv').config();
+'use strict';
+require('dotenv').config({ quiet: true });
 
-const express = require('express');
-const cors = require('cors');
-const app = express();
+let config;
+try {
+  config = require('./config/env').getConfig();
+} catch (err) {
+  console.error(`\n${err.message}\n`);
+  process.exit(1);
+}
+if (!config.databaseUrl) {
+  console.error('\nInvalid configuration:\n  - DATABASE_URL is required.\n');
+  process.exit(1);
+}
+config.warnings.forEach((w) => console.warn(`[config] ${w}`));
 
-// The dashboard (Vite, port 5173) and this API (port 3000) are different
-// origins in dev, hence CORS.
-app.use(
-  cors({
-    origin: process.env.DASHBOARD_URL || 'http://localhost:5173',
-    // The browser must be allowed to send its login cookie with API calls.
-    credentials: true,
-  })
-);
-// Quick Check uploads whole files/folders as JSON, so the default 100 KB limit
-// is far too small. The review itself is capped at 300 KB of code (see
-// utils/quick-files.js); 3 MB leaves room for JSON escaping overhead.
-app.use(express.json({ limit: '3mb' }));
+const { createApp } = require('./app');
+const pool = require('./database/connection');
+const adminStore = require('./admin/store');
+const { purgeExpiredSessions } = require('./lib/session');
 
-const webhookRouter = require('./trigger/webhook-handler');
-app.use('/webhook', webhookRouter);
-
-const repoViewRouter = require('./dashboard/api/repo-view');
-const prDrilldownRouter = require('./dashboard/api/pr-drilldown');
-const analyticsRouter = require('./dashboard/api/analytics');
-const githubRouter = require('./dashboard/api/github');
-const tablesRouter = require('./dashboard/api/tables');
-const eventsRouter = require('./dashboard/api/events');
-const quickReviewRouter = require('./dashboard/api/quick-review');
-const authRouter = require('./dashboard/api/auth');
-app.use('/api', repoViewRouter);
-app.use('/api', prDrilldownRouter);
-app.use('/api', analyticsRouter);
-app.use('/api', authRouter);
-app.use('/api', githubRouter);
-app.use('/api', tablesRouter);
-app.use('/api', eventsRouter);
-app.use('/api', quickReviewRouter);
-
-const PORT = process.env.PORT || 3000;
-
-app.get('/', (req, res) => {
-  res.send('Server running');
-});
-
-// Friendly error for oversized request bodies (otherwise the browser just sees
-// a generic failure).
-app.use((err, req, res, next) => {
-  if (err && err.type === 'entity.too.large') {
-    return res.status(413).json({
-      error: 'That upload is too large. Quick Check accepts up to 300 KB of code in total — try a smaller folder or fewer files.',
-    });
-  }
-  next(err);
-});
+const app = createApp();
+const PORT = config.port;
 
 const server = app.listen(PORT, (err) => {
-  // Express 5 hands startup failures (e.g. the port is taken) to this callback
-  // instead of throwing. Without this check the server would print "running"
-  // even though it never started, and the dashboard would quietly end up talking
-  // to whatever other program owns the port ("Network Error" in the browser).
+  // Express 5 hands startup failures (e.g. the port is taken) to this callback.
   if (err) {
     if (err.code === 'EADDRINUSE') {
       console.error(
         `\nPort ${PORT} is already in use by another program, so the API could not start.\n` +
-          `Close that program, or change PORT in .env (and set VITE_API_BASE_URL in dashboard/client/.env to match).\n` +
+          `Close that program, or change PORT in .env.\n` +
           `Windows: run  netstat -ano | findstr :${PORT}  to find the process.\n`
       );
     } else {
@@ -72,44 +36,52 @@ const server = app.listen(PORT, (err) => {
     }
     process.exit(1);
   }
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server is running on http://localhost:${PORT} (${config.nodeEnv})`);
 });
+server.keepAliveTimeout = 65000;
+
+// Housekeeping: expired visitor + admin sessions.
+const cleanup = setInterval(() => {
+  purgeExpiredSessions().catch(() => {});
+  adminStore.purgeExpired().catch(() => {});
+}, 30 * 60 * 1000);
+cleanup.unref();
 
 // ---------------------------------------------------------------------------
-// Embedded smee.io client — forwards GitHub webhook deliveries from the smee
-// channel straight into this same process, so you don't need a second
-// terminal running `smee --url ... --target ...` any more.
-// Set SMEE_URL in .env to enable it; leave it blank to skip (e.g. if you're
-// exposing the webhook another way, like a real public URL).
+// Embedded smee.io client (development only) - forwards GitHub webhook deliveries
+// from the smee channel into this process. It is never started in production:
+// there, point the GitHub webhook straight at https://your-domain<WEBHOOK_PATH>.
 // ---------------------------------------------------------------------------
-let smeeClient = null;
-if (process.env.SMEE_URL) {
+let smeeEvents = null;
+if (config.smeeUrl && !config.isProd) {
   const SmeeClient = require('smee-client').default;
-  const webhookPath = process.env.WEBHOOK_PATH || '/webhook/github';
-
-  smeeClient = new SmeeClient({
-    source: process.env.SMEE_URL,
-    target: `http://localhost:${PORT}${webhookPath}`,
-    logger: {
-      info: (msg) => console.log(`[smee] ${msg}`),
-      error: (msg) => console.error(`[smee] ${msg}`),
-    },
+  const client = new SmeeClient({
+    source: config.smeeUrl,
+    target: `http://localhost:${PORT}${config.webhookPath}`,
+    logger: { info: (msg) => console.log(`[smee] ${msg}`), error: (msg) => console.error(`[smee] ${msg}`) },
   });
-
-  var smeeEvents = smeeClient.start();
-  console.log(`[smee] forwarding ${process.env.SMEE_URL} -> http://localhost:${PORT}${webhookPath}`);
+  smeeEvents = client.start();
+  console.log(`[smee] forwarding ${config.smeeUrl} -> http://localhost:${PORT}${config.webhookPath}`);
+} else if (config.smeeUrl && config.isProd) {
+  console.warn('[smee] SMEE_URL is ignored in production.');
 } else {
-  console.log('[smee] SMEE_URL not set in .env — skipping embedded webhook forwarding.');
+  console.log('[smee] SMEE_URL not set - skipping embedded webhook forwarding.');
 }
 
-function shutdown() {
+let shuttingDown = false;
+function shutdown(code = 0) {
+  if (shuttingDown) return;
+  shuttingDown = true;
   console.log('\nShutting down...');
-  if (smeeEvents && typeof smeeEvents.close === 'function') {
-    smeeEvents.close();
-  }
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 1500).unref();
+  if (smeeEvents && typeof smeeEvents.close === 'function') smeeEvents.close();
+  server.close(() => pool.end().finally(() => process.exit(code)));
+  server.closeAllConnections?.(); // SSE streams would otherwise keep the server open
+  setTimeout(() => process.exit(code), 3000).unref();
 }
-
-process.on('SIGINT', shutdown);
-process.on('SIGTERM', shutdown);
+process.on('SIGINT', () => shutdown(0));
+process.on('SIGTERM', () => shutdown(0));
+process.on('unhandledRejection', (reason) => console.error('[unhandledRejection]', reason instanceof Error ? reason.stack : reason));
+process.on('uncaughtException', (err) => {
+  console.error('[uncaughtException]', err.stack || err);
+  shutdown(1);
+});

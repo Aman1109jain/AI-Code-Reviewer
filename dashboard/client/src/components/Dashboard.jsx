@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Search, X, GitPullRequest, FileUp, Code2, Github } from 'lucide-react';
 import api from '../api.js';
 import { useLive } from '../context/LiveContext.jsx';
 import { useGithub } from '../context/GithubContext.jsx';
 import StatCards from './StatCards.jsx';
-import TrendsChart from './TrendsChart.jsx';
+// The chart pulls in the (large) charting library, so it loads on demand.
+const TrendsChart = lazy(() => import('./TrendsChart.jsx'));
 
 const SOURCE_META = {
   github_pr: { label: 'PR', icon: GitPullRequest },
@@ -27,13 +28,23 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
   const { loading: ghLoading, connected, connect, authError, dismissAuthError } = useGithub();
 
   useEffect(() => {
+    if (ghLoading) return;
+    // Reviews are private to the connected account: nothing is requested until connected.
+    if (!connected) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     api
       .getReviews()
-      .then(setReviews)
-      .catch((err) => setError(err.message))
+      .then((rows) => {
+        setReviews(rows);
+        setError(null);
+      })
+      .catch((err) => setError(err.response?.data?.error || err.message))
       .finally(() => setLoading(false));
-  }, [version]);
+  }, [version, connected, ghLoading]);
 
   useEffect(() => {
     if (pendingScroll === 'chart') {
@@ -156,7 +167,11 @@ export default function Dashboard({ onSelectReview, activeRepo, onClearRepoFilte
         )}
       </div>
 
-      <TrendsChart />
+      {connected && (
+        <Suspense fallback={null}>
+          <TrendsChart />
+        </Suspense>
+      )}
     </div>
   );
 }

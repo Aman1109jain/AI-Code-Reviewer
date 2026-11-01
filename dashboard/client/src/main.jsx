@@ -6,15 +6,17 @@ import { GithubProvider } from './context/GithubContext.jsx';
 import { LiveProvider } from './context/LiveContext.jsx';
 import './index.css';
 import './responsive.css';
+import './admin.css';
 
+// GithubProvider is outside LiveProvider: live updates only start once a user is connected.
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
-      <LiveProvider>
-        <GithubProvider>
+      <GithubProvider>
+        <LiveProvider>
           <App />
-        </GithubProvider>
-      </LiveProvider>
+        </LiveProvider>
+      </GithubProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

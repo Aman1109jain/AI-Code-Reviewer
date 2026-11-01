@@ -1,14 +1,12 @@
+'use strict';
 const express = require('express');
 const router = express.Router();
-const { getAllReviews } = require('../../findings/db');
+const { getReviewsForUser } = require('../../findings/db');
+const { requireGithubUser } = require('../../middleware/auth');
+const { wrap } = require('../../middleware/errors');
 
-router.get('/reviews', async (req, res) => {
-  try {
-    const reviews = await getAllReviews();
-    res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get('/reviews', requireGithubUser, wrap(async (req, res) => {
+  res.json(await getReviewsForUser(req.ghUser.userId));
+}));
 
 module.exports = router;
