@@ -24,7 +24,7 @@ jobs:
       TEST_DATABASE_URL: postgres://acr:acr_ci@localhost:5432/acr_test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22, cache: npm }
       - run: npm ci
       - run: npm ci --prefix dashboard/client
@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with: { node-version: 22 }
       # Fails the build on high/critical vulnerabilities in production dependencies.
       - run: npm audit --omit=dev --audit-level=high
