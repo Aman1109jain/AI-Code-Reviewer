@@ -18,8 +18,3 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 coverage/
-
-# local tooling
-.neon
-.agents/
-skills-lock.json
