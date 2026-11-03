@@ -29,7 +29,7 @@ const listQuery = z.strictObject({
   q: z.string().max(100).optional(),
 });
 
-// --- reading -----------------------------------------------------------------
+// --- reading ------------------------------------------------------------
 
 router.get('/tables', wrap(async (req, res) => {
   const out = [];
