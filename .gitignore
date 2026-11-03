@@ -4,7 +4,7 @@ dashboard/client/dist/
 
 # secrets and local state - never commit these
 .env
-.env.*
+.env.
 .data/
 *.pem
 *.key
