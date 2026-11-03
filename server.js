@@ -53,15 +53,30 @@ cleanup.unref();
 // there, point the GitHub webhook straight at https://your-domain<WEBHOOK_PATH>.
 // ---------------------------------------------------------------------------
 let smeeEvents = null;
+
 if (config.smeeUrl && !config.isProd) {
-  const SmeeClient = require('smee-client').default;
-  const client = new SmeeClient({
-    source: config.smeeUrl,
-    target: `http://localhost:${PORT}${config.webhookPath}`,
-    logger: { info: (msg) => console.log(`[smee] ${msg}`), error: (msg) => console.error(`[smee] ${msg}`) },
-  });
-  smeeEvents = client.start();
-  console.log(`[smee] forwarding ${config.smeeUrl} -> http://localhost:${PORT}${config.webhookPath}`);
+  (async () => {
+    try {
+      const { default: SmeeClient } = await import('smee-client');
+
+      const client = new SmeeClient({
+        source: config.smeeUrl,
+        target: `http://localhost:${PORT}${config.webhookPath}`,
+        logger: {
+          info: (msg) => console.log(`[smee] ${msg}`),
+          error: (msg) => console.error(`[smee] ${msg}`),
+        },
+      });
+
+      smeeEvents = client.start();
+
+      console.log(
+        `[smee] forwarding ${config.smeeUrl} -> http://localhost:${PORT}${config.webhookPath}`
+      );
+    } catch (err) {
+      console.error('[smee] Failed to start client:', err);
+    }
+  })();
 } else if (config.smeeUrl && config.isProd) {
   console.warn('[smee] SMEE_URL is ignored in production.');
 } else {
