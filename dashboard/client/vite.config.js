@@ -7,7 +7,7 @@ export default defineConfig({
     host: true,
     // Allows the VS Code / dev-tunnel URL you share with friends. Development only:
     // production serves the built files from Express, not from this dev server.
-    allowedHosts: true,
+    allowedHosts: ['.devtunnels.ms'],
     // The browser only ever talks to this origin; /api is forwarded to the Express server.
     proxy: {
       '/api': {
